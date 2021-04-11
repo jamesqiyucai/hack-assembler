@@ -6,13 +6,12 @@ import java.util.Map;
 
 public class Symbol {
     private Map<String, Integer> symbolMap;
-    private List<String> _file;
-    public Symbol(List<String> file) {
-        this._file = file
-                .stream()
-                .filter(i -> !i.equals(""))
-                .filter(i -> !i.startsWith("/"))
-                .toList();
+    private int availableMemoryLocation = 16;
+    public int useMemoryLocation() {
+        this.availableMemoryLocation ++;
+        return this.availableMemoryLocation - 1;
+    };
+    public Symbol() {
         this.symbolMap = new HashMap();
         this.symbolMap.put("SP", 0);
         this.symbolMap.put("LCL", 1);
@@ -38,13 +37,13 @@ public class Symbol {
         this.symbolMap.put("R14", 14);
         this.symbolMap.put("R15", 15);
     }
-    public void parsePseudoCommand() {
-        for (int i = 0; i < this._file.size(); i++) {
-            String line = this._file.get(i);
-            if (line.startsWith("(")) {
-                this.symbolMap.put(line.substring(line.indexOf("(") + 1, line.indexOf(")") - 1), i + 1);
-            }
-        }
+    public void addEntry(String symbol, int address) {
+        this.symbolMap.put(symbol, address);
     }
-    public void parse
+    public boolean contains(String symbol) {
+        return this.symbolMap.containsKey(symbol);
+    }
+    public int getAddress(String symbol) {
+        return this.symbolMap.get(symbol);
+    }
 }
