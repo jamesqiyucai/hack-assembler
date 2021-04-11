@@ -61,25 +61,13 @@ public class Code {
         this.jumpMap.put("JLE", "110");
         this.jumpMap.put("JMP", "111");
     }
-    public String dest(String mnemonic) throws UnrecognizedDestException {
-        if (this.destMap.containsKey(mnemonic)) {
-            return this.destMap.get(mnemonic);
-        } else {
-            throw new UnrecognizedDestException();
-        }
+    public String dest(String mnemonic) {
+        return this.destMap.get(mnemonic);
     }
-    public String comp(String mnemonic) throws UnrecognizedCompException {
-        if (this.compMap.containsKey(mnemonic)) {
-            return this.compMap.get(mnemonic);
-        } else {
-            throw new UnrecognizedCompException();
-        }
+    public String comp(String mnemonic) {
+        return this.compMap.get(mnemonic);
     }
-    public String jump(String mnemonic) throws UnrecognizedJumpException {
-        if (this.jumpMap.containsKey(mnemonic)) {
-            return this.jumpMap.get(mnemonic);
-        } else {
-            throw new UnrecognizedJumpException();
-        }
+    public String jump(String mnemonic) {
+        return this.jumpMap.get(mnemonic);
     }
 }

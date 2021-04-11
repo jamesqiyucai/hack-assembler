@@ -2,8 +2,6 @@ package com.hack;
 
 import java.util.List;
 
-class wrongInstructionTypeException extends Exception {}
-
 public class Parser {
     private final List<String> _file;
     private String currentInstruction;
@@ -15,22 +13,16 @@ public class Parser {
                 .filter(i -> !i.equals(""))
                 .toList();
     }
-    private void reset() {
+    public void reset() {
         this._currentLineNumber = -1;
     }
-    public int currentLineNumber() {
-        return this._currentLineNumber;
-    }
+
     public boolean hasNextInstruction() {
-        if (this._currentLineNumber < this._file.size() - 1) {
-            return true;
-        } else {
-            this.reset();
-            return false;
-        }
+        return this._currentLineNumber < this._file.size() - 1;
     }
     public String getNextInstruction() {
         this.currentInstruction = this._file.get(this._currentLineNumber + 1);
+        this._currentLineNumber ++;
         return this.currentInstruction;
     }
     public Instruction getInstructionType() {
@@ -42,44 +34,32 @@ public class Parser {
             return Instruction.C;
         }
     }
-    public String getDest() throws wrongInstructionTypeException {
-        if (this.getInstructionType().equals(Instruction.C)) {
-            return this.currentInstruction.contains("=") ? "" : this.currentInstruction.substring(0, this.currentInstruction.indexOf("=") - 1);
-        } else {
-            throw new wrongInstructionTypeException();
-        }
+    public String getDest() {
+        return this.currentInstruction.contains("=") ? "" : this.currentInstruction.substring(0, this.currentInstruction.indexOf("=") - 1);
     }
-    public String getComp() throws wrongInstructionTypeException {
-        if (this.getInstructionType().equals(Instruction.C)) {
-            int startIndex, endIndex;
-            if (this.currentInstruction.contains("=")) {
-                startIndex = this.currentInstruction.indexOf("=") + 1;
-                if (this.currentInstruction.contains(";")) {
-                    endIndex = this.currentInstruction.indexOf(";") -1;
-                    return this.currentInstruction.substring(startIndex, endIndex);
-                } else {
-                    return this.currentInstruction.substring(startIndex);
-                }
-            } else {
-                if (this.currentInstruction.contains(";")) {
-                    return this.currentInstruction.substring(0, this.currentInstruction.indexOf(";") - 1);
-                } else {
-                    return this.currentInstruction;
-                }
-            }
-        } else {
-            throw new wrongInstructionTypeException();
-        }
-    }
-    public String getJump() throws wrongInstructionTypeException {
-        if (this.getInstructionType().equals(Instruction.C)) {
+    public String getComp() {
+        int startIndex, endIndex;
+        if (this.currentInstruction.contains("=")) {
+            startIndex = this.currentInstruction.indexOf("=") + 1;
             if (this.currentInstruction.contains(";")) {
-                return this.currentInstruction.substring(this.currentInstruction.indexOf(";") + 1);
+                endIndex = this.currentInstruction.indexOf(";") -1;
+                return this.currentInstruction.substring(startIndex, endIndex);
             } else {
-                return "";
+                return this.currentInstruction.substring(startIndex);
             }
         } else {
-            throw new wrongInstructionTypeException();
+            if (this.currentInstruction.contains(";")) {
+                return this.currentInstruction.substring(0, this.currentInstruction.indexOf(";") - 1);
+            } else {
+                return this.currentInstruction;
+            }
+        }
+    }
+    public String getJump() {
+        if (this.currentInstruction.contains(";")) {
+            return this.currentInstruction.substring(this.currentInstruction.indexOf(";") + 1);
+        } else {
+            return "";
         }
     }
 }

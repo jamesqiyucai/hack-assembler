@@ -1,6 +1,10 @@
 package com.hack;
 
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,6 +12,7 @@ import java.util.Scanner;
 public class Assembler {
     public static void main(String[] args) {
         Symbol symbolTable = new Symbol();
+        Code codeTable = new Code();
         List<String> file = new ArrayList<>();
         List<String> output = new ArrayList<>();
         try {
@@ -16,13 +21,12 @@ public class Assembler {
                 file.add(s.nextLine());
             }
         }
-        catch (Exception e) {
-            System.out.println(e);
+        catch (Exception ignored) {
         }
         Parser parser = new Parser(file);
         // first pass: turn (xxx) labels into instruction memory positions
+        int lines = 1;
         while (parser.hasNextInstruction()) {
-            int lines = 0;
             String instruction = parser.getNextInstruction();
             if (parser.getInstructionType().equals(Instruction.L)) {
                 symbolTable.addEntry(instruction.substring(1, instruction.length() -2), lines);
@@ -30,6 +34,7 @@ public class Assembler {
                 lines ++;
             }
         }
+        parser.reset();
         // second pass: put @xxx variables into memory locations
         while (parser.hasNextInstruction()) {
             String instruction = parser.getNextInstruction();
@@ -42,6 +47,39 @@ public class Assembler {
                 }
             }
         }
-
+        parser.reset();
+        // third pass: mapping the list of assembly code to machine code
+        while (parser.hasNextInstruction()) {
+            String instruction = parser.getNextInstruction();
+            switch (parser.getInstructionType()) {
+                case A:
+                    if (symbolTable.contains(instruction.substring(1))) {
+                        StringBuilder binaryString = new StringBuilder(Integer.toBinaryString(symbolTable.getAddress(instruction.substring(1))));
+                        while (binaryString.length() < 16) {
+                            binaryString.insert(0, "0");
+                        }
+                        output.add(binaryString.toString());
+                    } else {
+                        StringBuilder binaryString = new StringBuilder(Integer.toBinaryString(Integer.parseInt(instruction.substring(1))));
+                        while (binaryString.length() < 16) {
+                            binaryString.insert(0, "0");
+                        }
+                        output.add(binaryString.toString());
+                    }
+                    break;
+                case C:
+                    String code = "111" + codeTable.comp(parser.getComp()) + codeTable.dest(parser.getDest()) + codeTable.jump(parser.getJump());
+                    output.add(code);
+                    break;
+            }
+        }
+        parser.reset();
+        // write to file
+        Path out = Paths.get("machine_code_output");
+        try {
+            Files.write(out, output, Charset.defaultCharset());
+        }
+        catch (Exception ignored) {
+        }
     }
 }
